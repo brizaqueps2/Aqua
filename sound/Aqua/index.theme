@@ -1,0 +1,6 @@
+[Sound Theme]
+Name=Aqua
+Directories=stereo
+
+[stereo]
+OutputProfile=stereo

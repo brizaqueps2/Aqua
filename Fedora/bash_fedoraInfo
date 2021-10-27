@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+# copy the file
+# cp -av bash_fedoraInfo /etc/
+
+# Colors
+bold="$(tput bold)"
+black="$(tput setaf 0)"
+red="$(tput setaf 1)"
+green="$(tput setaf 2)"
+yellow="$(tput setaf 3)"
+blue="$(tput setaf 4)"
+magenta="$(tput setaf 5)"
+cyan="$(tput setaf 6)"
+white="$(tput setaf 7)"
+randomColors="$(tput setaf `shuf -i 1-9 -n 1`)"
+reset="$(tput sgr0)"
+
+
+# Information
+host="$(cat /etc/hostname)"
+os="Fedora"
+kernel="$(uname -sr)"
+shell="$(basename ${SHELL})"
+packages="$(rpm -qa | wc -l)"
+uptime="$(uptime -p | sed 's/up //')"
+
+
+getMemory_()
+{
+	# Get memory
+	while IFS=":" read -r a b; do
+		case $a in
+			"MemTotal") ((mem_used+=${b/kB})); mem_total="${b/kB}";;
+			"Shmem") ((mem_used+=${b/kB}));;
+			"MemFree" | "Buffers" | "Cached" | "SReclaimable")
+				mem_used="$((mem_used-=${b/kB}))"
+			;;
+		esac
+	done < /proc/meminfo
+	mem_used="$((mem_used / 1024))"
+	mem_total="$((mem_total / 1024))"
+	mem_free="$((mem_total-mem_used))"
+}
+getMemory_
+
+# Output Fedora
+clear
+cat<<EOF
+${reset}${bold}${white}Welcome to ${os}
+${reset}${bold}${randomColors}
+      _____       ${USER}${reset}${bold}${white}@${randomColors}${host}
+     /   __)\     OS:${reset}${bold}${white}        ${os}${randomColors}
+     |  /  \ \    KERNEL:${bold}${white}    ${kernel}${randomColors}
+  ___|  |__/ /    UPTIME:${reset}${bold}${white}    ${uptime}${randomColors}
+ /  (_   _)_/     PACKAGES:${reset}${bold}${white}  ${packages}${randomColors}
+/  /  |  |        SHELL:${reset}${bold}${white}     ${shell}${randomColors}
+\  \__/  |        MEMORY:${reset}${bold}${white}    ${mem_used} / ${mem_total} / ${mem_free}${randomColors}
+ \ (_____/                  
+${reset}
+EOF
